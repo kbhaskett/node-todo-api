@@ -1,11 +1,13 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var ObjectId = require('mongoose').Types.ObjectId;
+const express = require('express');
+const bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb');
+const _ = require('lodash');
 
 
-var {mongoose} = require('../db/mongoose');
-var {Todo} = require('../models/todo');
-var {User} = require('../models/user');
+const {mongoose} = require('../db/mongoose');
+const {Todo} = require('../models/todo');
+const {User} = require('../models/user');
+
 
 var app = express();
 const port = process.env.PORT || 3000;
@@ -34,7 +36,7 @@ app.get('/todos', (req, res) => {
 
 app.get('/todo/:id', (req, res) => {
     var id = req.params.id;
-    if (!ObjectId.isValid(id)) {
+    if (!ObjectID.isValid(id)) {
         return res.status(400).send('Invalid Id passed');
     }
 
@@ -51,7 +53,7 @@ app.get('/todo/:id', (req, res) => {
 
 app.delete('/todo/:id', (req, res) => {
     var id = req.params.id;
-    if (!ObjectId.isValid(id)) {
+    if (!ObjectID.isValid(id)) {
         return res.status(400).send('Invalid Id passed');
     }
 
@@ -63,6 +65,30 @@ app.delete('/todo/:id', (req, res) => {
         }
     }, (err) => {
         return res.status(400).send('Problems deleting this item');
+    });
+});
+
+app.patch('/todo/:id', (req, res) => {
+    var id = req.params.id;
+    if (!ObjectID.isValid(id)) {
+        return res.status(400).send('Invalid Id passed');
+    }
+
+    var body = _.pick(req.body, ['text', 'completed']);
+
+    if (!_.isBoolean(body.completed)) {
+        return res.status(400).send('Invalid completed value');
+    }
+    
+    body.completedAt = body.completed ? new Date() : null;
+
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+        if (!todo) {
+            return res.status(404).send();
+        }
+        return res.send({todo});
+    }, (err) => {
+        return res.status(400).send('Problems updating this item');
     });
 });
 

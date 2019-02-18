@@ -111,7 +111,6 @@ describe('DELETE /todo/:id', () => {
           })
           .end((err, res) => {
             if (err) return done(err);
-            console.log('finding **********');
             Todo.findById(todos[0]._id.toHexString()).then((todo) => {
                 expect(todo).toBeNull();
                 done();
