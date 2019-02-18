@@ -7,10 +7,12 @@ const {Todo} = require('../models/todo');
 
 const todos = [{
   _id: new ObjectID(),
-  text: 'First test todo'
+  text: 'First test todo',
 }, {
   _id: new ObjectID(),
-  text: 'Second test todo'
+  text: 'Second test todo',
+  completed: true,
+  completedAt: new Date()
 }];
 
 beforeEach((done) => {
@@ -116,9 +118,9 @@ describe('DELETE /todo/:id', () => {
                 done();
             }).catch((err) => done(err));
         });
-      });
+    });
     
-      it('should return 404 if todo not found', (done) => {
+    it('should return 404 if todo not found', (done) => {
         var hexId = new ObjectID().toHexString();
     
         request(app)
@@ -127,10 +129,64 @@ describe('DELETE /todo/:id', () => {
           .end(done);
       });
     
-      it('should return 404 for non-object ids', (done) => {
+    it('should return 404 for non-object ids', (done) => {
         request(app)
           .delete('/todo/123abc')
           .expect(400)
           .end(done);
-      });
     });
+});
+
+describe('PATCH /tood/:id', () => {
+    it('should update the todo', (done) => {
+        var text = 'Updated text';
+        var completed = true;
+        request(app)
+        .patch(`/todo/${todos[0]._id.toHexString()}`)
+        .send({text, completed})
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.todo.text).toBe(text);
+          expect(res.body.todo.completed).toBe(true);
+          expect(res.body.todo.completedAt).toExist;
+        })
+        .end(done);
+    });
+
+    it('should clear the completedAt', (done) => {
+        var text = 'Updated text';
+        var completed = false;
+        request(app)
+        .patch(`/todo/${todos[1]._id.toHexString()}`)
+        .send({text, completed})
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.todo.text).toBe(text);
+          expect(res.body.todo.completed).toBe(false);
+          expect(res.body.todo.completedAt).toBeNull;
+        })
+        .end(done);
+    });
+
+    it('should return 404 if todo not found', (done) => {
+        var hexId = new ObjectID().toHexString();
+        var text = 'some text';
+        var completed = false;
+    
+        request(app)
+          .patch(`/todo/${hexId}`)
+          .send({text, completed})
+          .expect(404)
+          .end(done);
+    });
+    
+    it('should return 404 for non-object ids', (done) => {
+        var text = 'some text';
+        var completed = false;
+        request(app)
+          .patch('/todo/123abc')
+          .send({text, completed})
+          .expect(400)
+          .end(done);
+    });
+});
