@@ -49,6 +49,23 @@ app.get('/todo/:id', (req, res) => {
     });
 });
 
+app.delete('/todo/:id', (req, res) => {
+    var id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).send('Invalid Id passed');
+    }
+
+    Todo.findByIdAndRemove(id).then((todo) => {
+        if (!todo) {
+            return res.status(404).send();
+        } else {
+            return res.send({todo});
+        }
+    }, (err) => {
+        return res.status(400).send('Problems deleting this item');
+    });
+});
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
