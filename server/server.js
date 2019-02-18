@@ -41,7 +41,7 @@ app.get('/todo/:id', (req, res) => {
         if (!todo) {
             return res.status(404).send();
         } else {
-            return res.send(todo);
+            return res.send({todo});
         }
     }, (err) => {
         return res.status(400).send('Problems retrieving this item');
