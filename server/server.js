@@ -1,3 +1,5 @@
+const config = require('./config');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
@@ -10,7 +12,7 @@ const {User} = require('../models/user');
 
 
 var app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
@@ -89,6 +91,22 @@ app.patch('/todo/:id', (req, res) => {
         return res.send({todo});
     }, (err) => {
         return res.status(400).send('Problems updating this item');
+    });
+});
+
+app.post('/user', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User({
+        email: body.email,
+        password: body.password
+    });
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        return res.header('x-auth', token).status(201).send(user);
+    }).catch((err) => {
+        return res.status(400).send(err);
     });
 });
 
