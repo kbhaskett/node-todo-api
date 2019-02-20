@@ -266,3 +266,56 @@ describe('POST /user', () => {
           .end(done);
     });
 });
+describe('POST /userlogin', () => {
+    it('should send 200 and auth token if proper credentials passed', (done) => {
+        request(app)
+          .post('/user/login')
+          .send({
+              email: users[1].email,
+              password: users[1].password
+          })
+          .expect(200)
+          .expect((res) => {
+              expect(res.headers['x-auth']).toExist;
+          })
+          .end((err, res) => {
+              if (err) return done(err);
+
+              User.findById(users[1]._id).then((user) => {
+                expect(user.tokens[0]).toMatchObject({
+                    access: 'auth',
+                    token: res.headers['x-auth']
+                });
+                done();
+              }).catch((e) => done(e));
+          });
+    });
+
+    it('should send 400 if incorrrect email passed', (done) => {
+        request(app)
+          .post('/user/login')
+          .send({
+              email: users[1].email,
+              password: 'abc123def'
+          })
+          .expect(400)
+          .expect((res) => {
+              expect(res.headers['x-auth']).not.toExist;
+          })
+          .end(done);
+    });
+
+    it('should send 400 if incorrrect email passed', (done) => {
+        request(app)
+          .post('/user/login')
+          .send({
+              email: 'abcc@example.com',
+              password: users[1].password
+          })
+          .expect(400)
+          .expect((res) => {
+              expect(res.headers['x-auth']).not.toExist;
+          })
+          .end(done);
+    });
+});

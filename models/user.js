@@ -82,9 +82,7 @@ UserSchema.statics.findByCredentials = function(email, password) {
         if (!user) return Promise.reject();
         return new Promise((resolve, reject) => {
             bycrypt.compare(password, user.password, (err, res) => {
-                console.log('res', res);
                 if (res) {
-                    console.log('should resolve');
                     resolve(user);
                 } else { 
                     reject();
