@@ -123,6 +123,22 @@ app.get('/users/me', (req, res) => {
     });
 });
 
+app.post('/user/login', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User({
+        email: body.email,
+        password: body.password
+    });
+
+    User.findByCredentials(user.email, user.password).then((user) => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        return res.header('x-auth', token).send(user);
+    }).catch((err) => {
+        return res.status(400).send();
+    });
+});
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
