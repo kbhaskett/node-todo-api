@@ -17,7 +17,11 @@ const users = [{
 },{
     _id: userTwoId,
     email: 'user2pass@example.com',
-    password: 'user2pass'
+    password: 'user2pass',
+    tokens: [{
+        access: 'auth',
+        token: jwt.sign({_id: userTwoId, access: 'auth'}, 'hockeysticks').toString()
+    }]
 }];
 const populateUsers = (done) => {
     User.deleteMany({}).then(()=> {
@@ -30,11 +34,13 @@ const populateUsers = (done) => {
 const todos = [{
     _id: new ObjectID(),
     text: 'First test todo',
+    createdBy: users[0]._id
   }, {
     _id: new ObjectID(),
     text: 'Second test todo',
     completed: true,
-    completedAt: new Date()
+    completedAt: new Date(),
+    createdBy: users[1]._id
   }];
   
 const populateTodos = (done) => {
